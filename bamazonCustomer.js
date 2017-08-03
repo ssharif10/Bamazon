@@ -130,7 +130,7 @@ function amount() {
     })
     .then(function(answer) {
       var amount = answer.enterAmount;
-      connection.query("SELECT stock_quantity FROM products", function(err, res) {
+      connection.query("SELECT * FROM products", function(err, res) {
         if (choice === "1") stock = res[0].stock_quantity;
         else if(choice === "2") stock = res[1].stock_quantity;
         else if(choice === "3") stock = res[2].stock_quantity;
@@ -141,15 +141,34 @@ function amount() {
         else if(choice === "8") stock = res[7].stock_quantity;
         else if(choice === "9") stock = res[8].stock_quantity;
         else if(choice === "10") stock = res[9].stock_quantity;
+
+        var total = res[choice - 1].price * amount;
+        // console.log(total);
+        //giving customer confirmation that order is placed and what their $total is now.
           if (amount <= stock){
             console.log("Your order of " + amount + " " + item + "(s) has been succefully placed.\n" +
-                        "Thanks for your business!");
-            connection.end();
-            return;
+                        "Your Total is: $" + total + "\n" + "Thank you for your business!");
+
+                   var query = connection.query(
+             "UPDATE products SET ? WHERE ?",[
+               {
+                 stock_quantity: res[choice - 1].stock_quantity - amount,
+               },
+               {
+                 item_id: res[choice - 1].item_id
+               }
+             ]
+           );
+
           } else {
             console.log("Sorry we only have " + stock + " available.  PLease enter a different amount.")
             reenterAmount();
+
+           
           }
+          	 connection.end();
+            return;
+
       });
     });
 }
